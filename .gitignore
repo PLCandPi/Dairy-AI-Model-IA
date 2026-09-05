@@ -1,0 +1,8 @@
+output/
+*.pyc
+__pycache__/
+venv/
+.cache/
+*.safetensors
+*.bin
+*.gguf
