@@ -1,8 +1,10 @@
-# Termux LLM Training
+# Dairy AI Model
 
-A LoRA fine-tuning pipeline that runs natively on a phone (Termux, CPU-only,
-no training GPU support on this hardware) to specialize a small model into a
-**dairy plant monitoring systems assistant**.
+A LoRA fine-tuning pipeline that specializes a small model (`Qwen/Qwen3-0.6B`)
+into a **dairy plant monitoring systems assistant** - trained on real HTST
+pasteurization/CIP domain knowledge, real industrial automation standards
+(ISA-88, ISA-18.2, the FDA Pasteurized Milk Ordinance), and one real codebase
+([HeatWatch](https://github.com/PLCandPi/HeatWatch-Kattapana-Milma)).
 
 ## What this is - and isn't
 
@@ -11,48 +13,51 @@ no training GPU support on this hardware) to specialize a small model into a
   edits files, restarts services, or touches any actuator/relay itself -
   every suggestion is meant to be reviewed by a person before anything
   changes on a real system.
-- It's seeded with real HTST pasteurization / CIP domain knowledge and one
-  real codebase ([HeatWatch](https://github.com/PLCandPi/HeatWatch-Kattapana-Milma)),
-  not a "universal" model that understands any dairy plant out of the box.
-  Fine-tuning on a small base model raises its familiarity with this
-  domain and codebase - it does not turn it into a large-model-class code
-  reasoner. Treat its output as a fast first-pass opinion, not a verdict.
-- Training happens on-device, CPU-only. There is no confirmed way to use
-  this phone's GPU (Adreno 612, Snapdragon 675) for training - only
-  inference frameworks (llama.cpp/Ollama via Vulkan) accelerate on it.
+- It's seeded with real domain knowledge and one real codebase, not a
+  "universal" model that understands any dairy plant out of the box.
+  Fine-tuning on a small base model raises its familiarity with this domain
+  and codebase - it does not turn it into a large-model-class code reasoner.
+  Treat its output as a fast first-pass opinion, not a verdict.
 
 ## Model
 
-`Qwen/Qwen3-0.6B` - chosen specifically to fit this phone's available RAM
-(~2.6-2.8GB) for real backprop training with LoRA + gradient checkpointing.
-`1.7B` was tried and is too tight for training (fine for inference-only use
-via Ollama, not for holding gradients/activations too).
+`Qwen/Qwen3-0.6B` - originally chosen to fit a phone's available RAM
+(~2.6-2.8GB) for on-device training with LoRA + gradient checkpointing, back
+when this project trained natively on Android/Termux. On-device training is
+now dropped in favor of Colab (below), but the small model size is kept:
+it's cheap and fast to iterate on, and the point is a focused domain
+specialist, not a general-purpose large-model-class reasoner.
 
-## Quick start (Termux)
+## Quick start (Colab)
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PLCandPi/Dairy-AI-Model-IA/blob/main/colab_train.ipynb)
+
+`Runtime -> Change runtime type -> T4 GPU`, then `Runtime -> Run all`.
+Clones this repo, installs dependencies, trains (`train.py` auto-detects
+CUDA and switches to fp16 - minutes instead of hours), then zips and
+downloads the trained adapter to your machine. Trade-off: your data leaves
+the device and the runtime is ephemeral - nothing persists once it
+disconnects, so run the last cell before closing the tab.
+
+## On-device (Termux) - dropped, kept for reference
+
+This project originally trained natively on a phone via Termux, CPU-only, no
+training GPU support on that hardware (Adreno 612 GPU can accelerate
+inference via llama.cpp/Ollama, but there's no confirmed way to use it for
+backprop/training). That path is no longer actively developed - Colab is
+strictly faster and skips an entire category of Android/Termux-specific
+build issues (see `SETUP_STATUS.md` for what those were). `setup_termux.sh`
+and `train.py`'s CPU/fp32 fallback still work if you want to resume it:
 
 ```bash
 bash setup_termux.sh
 python train.py
 ```
 
-That's it - `train.py` has no required arguments. It loads every `.jsonl`
+`train.py` has no required arguments either way - it loads every `.jsonl`
 file under `data/`, LoRA fine-tunes the base model, and saves the adapter to
-`output/adapter_final/`.
-
-**Resumable by design**: training checkpoints every 20 steps to `output/`.
-If the process gets killed (phone reboot, Termux backgrounded and killed by
-Android, app force-closed), just run `python train.py` again - it detects
-the last checkpoint and continues from there automatically.
-
-## Quick start (Colab)
-
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PLCandPi/Dairy-AI-Model-IA/blob/main/colab_train.ipynb)
-
-Same `train.py`, run on a GPU runtime instead of the phone - no Termux/Android
-build issues, and minutes instead of hours. `train.py` auto-detects CUDA and
-switches to fp16; nothing else to configure. Trade-off: your data leaves the
-device and the runtime is ephemeral, so the last notebook cell zips and
-downloads the trained adapter before the session disconnects.
+`output/adapter_final/`. Resumable by design: checkpoints every 20 steps to
+`output/`, and just re-running `train.py` picks up from the last checkpoint.
 
 ## Data
 
@@ -104,11 +109,12 @@ entries takes judgment, not just fetching. The realistic split:
 `auto_eval.py` is a fast automatable tripwire, not a replacement for
 actually reading the answers.
 
-## Why CPU-only, why fp32, why this LoRA setup
+## Why fp32 on CPU, fp16 on GPU, and this LoRA setup
 
-- No confirmed `bitsandbytes` quantization support for aarch64 - so this
-  trains the base model in plain fp32 rather than a quantized (QLoRA-style)
-  setup. Heavier per-step, but the reliable option on this hardware.
+- `train.py` auto-detects CUDA: fp16 on a training-capable GPU (Colab),
+  plain fp32 on CPU-only aarch64 builds (phone) - no confirmed
+  `bitsandbytes` quantization support there, so no QLoRA-style setup on that
+  path.
 - `gradient_checkpointing` + `enable_input_require_grads()` are both
   required together - checkpointing alone silently breaks gradient flow
   through a frozen base model with a LoRA adapter on top.
