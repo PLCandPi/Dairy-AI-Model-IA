@@ -45,7 +45,9 @@ HEDGE_MARKERS = [
 HIGH_CONFIDENCE_CLAIM_TYPES = {
     "explicit_requirement",
     "explicit_standard_concept",
+    "explicit_standard_rationale",
     "mixed_requirement_and_rationale",
+    "requirement_with_exception",
     "failure_mode_analysis",
 }
 
