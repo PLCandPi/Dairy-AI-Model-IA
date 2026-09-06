@@ -105,9 +105,11 @@ interrupted.
 
 ## Repo/environment reference
 
-- Repo: `github.com/PLCandPi/Termux-LLM-Training` (public). Cloned on the
-  phone at `~/Termux-LLM-Training`, and locally at
-  `/home/alvinad/Termux-LLM-Training`.
+- Repo: `github.com/PLCandPi/Dairy-AI-Model-IA` (public, renamed from
+  `Termux-LLM-Training`). Cloned on the phone at `~/Termux-LLM-Training`,
+  and locally at `/home/alvinad/Termux-LLM-Training` - the local folder
+  names still use the old repo name; only the GitHub repo itself was
+  renamed.
 - `train.py`, `setup_termux.sh`, `requirements.txt`, and the seed dataset
   (`data/dairy_domain_seed.jsonl`, `data/heatwatch_codebase_seed.jsonl`) are
   already committed — see `README.md` for the full design rationale (model

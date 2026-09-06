@@ -46,7 +46,7 @@ the last checkpoint and continues from there automatically.
 
 ## Quick start (Colab)
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PLCandPi/Termux-LLM-Training/blob/main/colab_train.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PLCandPi/Dairy-AI-Model-IA/blob/main/colab_train.ipynb)
 
 Same `train.py`, run on a GPU runtime instead of the phone - no Termux/Android
 build issues, and minutes instead of hours. `train.py` auto-detects CUDA and
