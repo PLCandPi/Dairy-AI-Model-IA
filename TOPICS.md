@@ -79,25 +79,14 @@ relabeled:
   `analog_io_seed.jsonl` - two files contradicting each other on the same
   question. Also had **no `think` field at all** before this pass, same gap
   as heatwatch_codebase.
+- **`data/isa_standards_seed.jsonl`** (30 entries, ISA-88/ISA-18.2) -
+  drafted, adversarially audited, and corrected in the same session (see
+  git history for the full correction list); merged from `data/pending/`
+  after review.
 
 ## Drafted, pending review (data/pending/)
 
-- ISA-88 (physical/procedural model, phase-to-control-module relationship,
-  recipe portability) and ISA-18.2 (alarm/alert/prompt/message, alarm
-  rationalization, prioritization vs. interlocks, suppression categories,
-  latching, first-out alarming) - `data/pending/isa_standards_seed.jsonl`,
-  **30 entries** (expanded from an initial 5, then adversarially
-  audited/corrected - see the correction list from that pass for specifics:
-  Control Module oversimplified as always-one-device, several entries
-  overstated ISA-88's phase-only-hardware rule as an absolute rather than a
-  design intent real systems can violate, the phase state list presented as
-  complete rather than illustrative, Alert/Prompt/Message relabeled as a
-  teaching framework rather than asserted as formally standardized terms,
-  first-out alarming downgraded from `explicit_standard_concept` to
-  `common_practice`, alarm-rationalization language reattributed from "the
-  standard requires" to "risk-based engineering practice"). Passed
-  `scripts/review_pending.py` and `scripts/audit_claims.py`. Needs a human
-  read before merging into `data/`.
+_(empty right now)_
 
 ## Needs work (flagged by auto_eval.py or manual review)
 

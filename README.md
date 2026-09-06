@@ -99,6 +99,9 @@ heuristic checker that flags wording/label mismatches.
 - `pmo_regulatory_seed.jsonl` - sourced from the FDA Grade "A" Pasteurized
   Milk Ordinance (exact HTST temp/time table, FDD behavior and placement,
   holding tube sizing/slope, thermal-limit-controller sealing).
+- `isa_standards_seed.jsonl` - ISA-88 (physical/procedural model, phase-to-
+  control-module relationship) and ISA-18.2 (alarm/alert/prompt/message,
+  rationalization, alarms vs. interlocks, suppression, latching).
 
 Add more `.jsonl` files here as real incidents/fixes accumulate - that's
 more valuable than anything synthetic, and the loader picks up every file
