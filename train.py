@@ -55,8 +55,17 @@ def build_supervised_example(tokenizer, example, max_length):
     prompt_ids = tokenizer.apply_chat_template(
         messages, tokenize=True, add_generation_prompt=True,
     )["input_ids"]
+    # Qwen3's chat template always wraps the final assistant turn in a
+    # <think>...</think> block - reasoning_content if supplied, otherwise
+    # empty. Leaving it empty on every example trains the model to suppress
+    # its own reasoning, so an optional "think" field lets a dataset supply
+    # real reasoning to imitate instead.
     full_ids = tokenizer.apply_chat_template(
-        messages + [{"role": "assistant", "content": example["output"]}],
+        messages + [{
+            "role": "assistant",
+            "content": example["output"],
+            "reasoning_content": example.get("think", ""),
+        }],
         tokenize=True, add_generation_prompt=False,
     )["input_ids"]
     full_ids = full_ids[:max_length]

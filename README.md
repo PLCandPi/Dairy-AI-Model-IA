@@ -56,7 +56,12 @@ downloads the trained adapter before the session disconnects.
 
 ## Data
 
-`data/*.jsonl`, each line `{"instruction": ..., "input": ..., "output": ...}`:
+`data/*.jsonl`, each line `{"instruction": ..., "input": ..., "output": ..., "think": ...}`.
+`think` is optional but strongly recommended: Qwen3's chat template always
+wraps the assistant's reply in a `<think>...</think>` block, empty if
+`think` isn't supplied - training on an empty one teaches the model to
+suppress its own reasoning rather than use it. Populate `think` with the
+real step-by-step reasoning that should lead to `output`.
 
 - `dairy_domain_seed.jsonl` - HTST pasteurization and CIP process knowledge
   (setpoints, cycle stages, common fault modes, sensor behavior).
