@@ -25,19 +25,26 @@ actually trains the model's `<think>` block (see README's note on why an
 empty one is dangerous), `reasoning_summary` is the same content kept under
 a name that survives if `think` is ever handled differently later.
 
-`claim_type` is the important one: it's a decision tree, not a vibe. As of
-the 2026-09-06 adversarial-review pass (see git history), the original
-3-value scheme (explicit_standard_concept / interpretation / common_practice)
-was replaced with a richer 7-value taxonomy that forces a real distinction
-between "the standard says X," "the standard's own narrative explains why X"
-(different from the requirement itself), and "I'm inferring why X":
+`claim_type` is the important one: it's a decision tree, not a vibe. It's
+been through two revision rounds (2026-09-06, see git history for both
+adversarial-review passes) as gaps in the taxonomy itself turned up during
+real audits - not just gaps in individual entries:
 
 - `explicit_requirement` - a directly quotable "shall"/"must" requirement.
 - `explicit_standard_concept` - a defined term/structure/hierarchy the
   source states directly (not necessarily a binding "shall" clause).
-- `mixed_requirement_and_rationale` - a requirement plus the source's *own*
-  stated reasoning for it (e.g. the PMO's "Public Health Reason" narrative
-  sections) - distinct from an entry where the rationale is our inference.
+- `explicit_standard_rationale` - the source's *own* explanatory/background
+  text stating its reasoning for a requirement (e.g. the PMO's Appendix
+  H.VI "Background" section, or its "Public Health Reason" narratives) -
+  distinct from a requirement itself, and distinct from an entry where the
+  rationale is our inference.
+- `mixed_requirement_and_rationale` - a requirement plus the source's own
+  stated reasoning for it, blended in one entry.
+- `requirement_with_exception` - a requirement stated alongside the source's
+  own explicit carve-out/exception to it (distinct from rationale - this is
+  about scope, not "why"). Added after a review caught an entry that stated
+  a rule as absolute while the source's very next sentence gave a permitted
+  exception.
 - `failure_mode_analysis` - reasoning built around enumerating independent
   ways a system/requirement could fail, and which mechanism catches each.
 - `comparison_inference` - a comparison between two things (e.g. batch vs.
@@ -51,7 +58,8 @@ between "the standard says X," "the standard's own narrative explains why X"
 
 High-confidence bucket (`scripts/audit_claims.py`'s heuristic treats these as
 where absolute/unhedged wording is expected): `explicit_requirement`,
-`explicit_standard_concept`, `mixed_requirement_and_rationale`,
+`explicit_standard_concept`, `explicit_standard_rationale`,
+`mixed_requirement_and_rationale`, `requirement_with_exception`,
 `failure_mode_analysis`. Everything else is a "softer" claim where hedged
 wording is expected - unhedged wording there is a sign of overclaiming.
 
@@ -81,6 +89,34 @@ defaulting to whichever two mechanisms are most salient - a real gap was
 found this way (a holding-tube-sizing entry that covered temperature and
 residence-time protection but omitted flow-rate governance/measurement as
 a third, independent failure mode).
+
+From the second adversarial-review pass (Appendix H.VI computerized-systems
+batch):
+
+- If a requirement includes an exception clause ("may be acceptable,
+  provided..."), the exception must be stated in the same entry - never
+  present the base rule as absolute and drop the carve-out
+  (`requirement_with_exception`).
+- When citing a specific numeric example from explanatory/background text
+  (e.g. "1 millisecond," "100 milliseconds"), preserve the exact numbers
+  rather than paraphrasing into vaguer language like "a fraction of a
+  cycle" - the specificity is often the entire point of the example.
+- Before writing about any project-specific system (HeatWatch or otherwise)
+  in a hypothetical-regulatory-comparison entry, re-verify the specific
+  factual claim about that system against its actual code in the same
+  session, even if it was verified in an earlier entry - don't let a
+  verified fact drift into an unverified restatement elsewhere (an earlier
+  draft claimed HeatWatch "never touches a real actuator/relay," directly
+  contradicted by this project's own verified poller.py code).
+- When a source defines several closely related technical terms in its own
+  glossary (e.g. ROM vs. EPROM vs. EEPROM vs. EAPROM), check whether a
+  requirement's wording ("some form of ROM") is actually resolved by those
+  definitions or genuinely ambiguous against them - don't silently pick the
+  convenient reading; flag the ambiguity instead.
+- Any entry combining a bare "shall" requirement with an explanatory "why"
+  must use the explicit template: "The [source] requires X. From an
+  engineering perspective, this addresses Y." - never blend the two into
+  one unmarked sentence.
 
 ## Done (merged into data/, audited 2026-09-06)
 
