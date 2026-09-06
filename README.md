@@ -68,10 +68,41 @@ real step-by-step reasoning that should lead to `output`.
 - `heatwatch_codebase_seed.jsonl` - scenarios grounded in the actual
   HeatWatch poller/dashboard code: its Chilling Failed Detector logic and
   known rough edges, config validation gaps, resilience behavior.
+- `analog_io_seed.jsonl` - sourced from the PPI AIMS-4X/8X analog input
+  module manual (Modbus sentinel values, alarm hysteresis, RTD wiring, IIR
+  filtering, cold-junction compensation).
+- `pmo_regulatory_seed.jsonl` - sourced from the FDA Grade "A" Pasteurized
+  Milk Ordinance (exact HTST temp/time table, FDD behavior and placement,
+  holding tube sizing/slope, thermal-limit-controller sealing).
 
 Add more `.jsonl` files here as real incidents/fixes accumulate - that's
 more valuable than anything synthetic, and the loader picks up every file
 in the directory automatically.
+
+## Growing the dataset
+
+There's no script that autonomously "scours the web and trains itself" -
+turning raw source material into good `{instruction, think, output}`
+entries takes judgment, not just fetching. The realistic split:
+
+1. **Research + draft** (a person, or an AI assistant with web search/fetch
+   - not a standalone script): pick a topic from `TOPICS.md`, find primary
+   sources, draft candidate entries grounded in real quoted facts, write
+   them to `data/pending/<topic>.jsonl`.
+2. **Validate** - `python scripts/review_pending.py` checks structure (valid
+   JSON, no missing `think` field, no near-duplicate of something already in
+   `data/`). Mechanical only - it doesn't judge correctness.
+3. **Review + merge** - a person reads the batch, then moves it:
+   `mv data/pending/<file>.jsonl data/<file>.jsonl`.
+4. **Retrain**, then **`python auto_eval.py`** - runs a fixed set of
+   held-out questions through the model and checks answers against known
+   facts from the source material (not the model grading itself). Flags
+   regressions/confabulation into `eval_report.json`; flagged topics go back
+   into `TOPICS.md` as "needs work" for the next research round.
+
+`compare_eval.py` stays the manual side-by-side check (see below) -
+`auto_eval.py` is a fast automatable tripwire, not a replacement for
+actually reading the answers.
 
 ## Why CPU-only, why fp32, why this LoRA setup
 

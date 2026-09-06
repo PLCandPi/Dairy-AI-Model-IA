@@ -6,3 +6,4 @@ venv/
 *.safetensors
 *.bin
 *.gguf
+eval_report.json
