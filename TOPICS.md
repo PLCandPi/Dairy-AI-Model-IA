@@ -86,7 +86,30 @@ relabeled:
 
 ## Drafted, pending review (data/pending/)
 
-_(empty right now)_
+- **Computerized/PLC-based public health controls** (FDA PMO Appendix
+  H.VI) - `data/pending/computerized_systems_seed.jsonl`, 8 entries. Covers
+  why computerized systems are treated differently from hard-wired ones
+  (sequential task cycling, easily-changed logic, error-free requirement),
+  dedicated-computer requirement, fail-safe/last-state-switch behavior, ROM
+  program storage, FORCE-ON/FORCE-OFF indicator requirement, the LOSA/HFA/
+  PDD acronyms from the FDD logic diagrams, and sealed hardware-disable
+  switches for reprogrammable peripherals. One entry directly cross-checks
+  PMO criterion 11 (no accessible operator override switches) against
+  HeatWatch's own manual-test override design. All entries directly
+  verified against the primary PMO text (not a secondary source), tagged
+  `explicit_standard_concept` throughout.
+- **Batch vs. continuous-flow HTST comparison** -
+  `data/pending/batch_vs_htst_seed.jsonl`, 5 entries. Covers why continuous
+  flow needs an automatic FDD while batch doesn't (no natural single
+  gating moment vs. product always in motion), what's actually shared
+  between the two (cross-checked indicating/recording thermometers), batch-
+  specific airspace heating and close-coupled valves (both about physical
+  locations the bulk-liquid thermometer can't see), and why HTST needs both
+  tube-geometry sizing *and* a real-time thermal interlock (two different
+  failure modes - not enough time vs. not enough heat).
+
+Both passed `scripts/review_pending.py` and `scripts/audit_claims.py`.
+Need a human read before merging into `data/`.
 
 ## Needs work (flagged by auto_eval.py or manual review)
 
@@ -105,13 +128,3 @@ actual flagged answer)_
   left out of the ISA batch since I wasn't confident enough in the exact
   terminology to avoid inventing something. Worth doing properly with
   better source access.
-- FDA PMO Appendix H.VI ("Criteria for the Evaluation of Computerized
-  Systems for Grade 'A' Public Health Controls") - surfaced during this
-  session's audit (it's what makes a PLC-based FDD legal, contradicting an
-  error we just fixed) but never actually read. Directly relevant to
-  HeatWatch's own PLC-based, non-hard-wired design.
-- Batch vs. continuous-flow HTST pasteurization control differences, deeper
-  than what's seeded - the audit surfaced that these use genuinely different
-  compliance mechanisms (cross-checked indicating/recording thermometers vs.
-  a sealed thermal-limit-controller), which is richer material than a single
-  entry captures.
