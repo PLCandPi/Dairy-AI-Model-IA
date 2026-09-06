@@ -11,6 +11,7 @@ which topics need more or better training data. Anything flagged should go
 back into TOPICS.md as a "needs work" item, not be auto-corrected - only a
 person (or the next research round) should decide what the fix actually is.
 """
+import argparse
 import json
 from datetime import datetime, timezone
 
@@ -98,10 +99,29 @@ def check_answer(answer, case):
 
 
 def main():
-    print("Loading fine-tuned model")
-    model, tokenizer = load_model()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--adapter-dir", default="output/adapter_final",
+        help="Path to a specific adapter/checkpoint to evaluate, e.g. "
+             "output/checkpoint-120 - lets you sweep checkpoints from a "
+             "single long training run to find where quality actually peaks, "
+             "rather than only ever checking the final epoch.",
+    )
+    parser.add_argument(
+        "--report", default="eval_report.json",
+        help="Output report path - give each checkpoint its own name "
+             "(e.g. eval_report_checkpoint-120.json) when sweeping multiple.",
+    )
+    args = parser.parse_args()
 
-    report = {"generated_at": datetime.now(timezone.utc).isoformat(), "results": []}
+    print(f"Loading fine-tuned model from {args.adapter_dir}")
+    model, tokenizer = load_model(adapter_dir=args.adapter_dir)
+
+    report = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "adapter_dir": args.adapter_dir,
+        "results": [],
+    }
     for case in EVAL_CASES:
         answer = generate(model, tokenizer, case["question"], max_new_tokens=250)
         passed, check_results, hit_flags = check_answer(answer, case)
@@ -115,11 +135,11 @@ def main():
         })
         print(f"[{'PASS' if passed else 'FLAG'}] ({case['topic']}) {case['question'][:70]}...")
 
-    with open("eval_report.json", "w") as f:
+    with open(args.report, "w") as f:
         json.dump(report, f, indent=2)
 
     flagged = [r for r in report["results"] if not r["passed"]]
-    print(f"\n{len(flagged)}/{len(report['results'])} flagged - see eval_report.json for full answers")
+    print(f"\n{len(flagged)}/{len(report['results'])} flagged - see {args.report} for full answers")
     if flagged:
         print("Flagged topics (candidates for TOPICS.md 'needs work'):")
         for r in flagged:

@@ -2,6 +2,8 @@
 """Side-by-side base vs fine-tuned comparison on held-out questions -
 none of these appear verbatim in data/*.jsonl. Manual read, not a metric:
 the point is to see whether the adapter changed anything meaningful."""
+import argparse
+
 from eval_common import generate, load_model
 
 HELD_OUT_QUESTIONS = [
@@ -19,8 +21,15 @@ HELD_OUT_QUESTIONS = [
 
 
 def main():
-    print("Loading base + fine-tuned model")
-    model, tokenizer = load_model()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--adapter-dir", default="output/adapter_final",
+        help="Path to a specific adapter/checkpoint, e.g. output/checkpoint-120",
+    )
+    args = parser.parse_args()
+
+    print(f"Loading base + fine-tuned model from {args.adapter_dir}")
+    model, tokenizer = load_model(adapter_dir=args.adapter_dir)
 
     for q in HELD_OUT_QUESTIONS:
         print("\n" + "=" * 100)

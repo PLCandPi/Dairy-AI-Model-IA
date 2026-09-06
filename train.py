@@ -81,6 +81,13 @@ def main():
     parser.add_argument("--data-dir", default=DEFAULT_DATA_DIR)
     parser.add_argument("--output-dir", default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--epochs", type=float, default=3.0)
+    parser.add_argument(
+        "--save-total-limit", type=int, default=None,
+        help="Max checkpoints to keep (older ones deleted). Default: keep all - "
+             "useful for sweeping checkpoints from a single long run to find "
+             "the best epoch count empirically, since there's no held-out eval "
+             "split to tell you when more epochs stop helping.",
+    )
     args = parser.parse_args()
 
     use_cuda = torch.cuda.is_available()
@@ -133,7 +140,7 @@ def main():
         learning_rate=2e-4,
         logging_steps=5,
         save_steps=20,
-        save_total_limit=3,
+        save_total_limit=args.save_total_limit,
         bf16=False, fp16=use_cuda,  # see dtype comment above
         report_to=[],
     )
