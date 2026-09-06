@@ -71,7 +71,7 @@ file under `data/`, LoRA fine-tunes the base model, and saves the adapter to
   "metadata": {
     "domain": "...", "standard": "...",
     "category": "...", "difficulty": "...",
-    "claim_type": "explicit_standard_concept | interpretation | common_practice"
+    "claim_type": "see TOPICS.md's Data schema section for the full taxonomy"
   }
 }
 ```

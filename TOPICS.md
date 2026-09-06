@@ -15,7 +15,7 @@ Every entry in `data/*.jsonl` now carries:
   "metadata": {
     "domain": "...", "standard": "...",
     "category": "...", "difficulty": "...",
-    "claim_type": "explicit_standard_concept | interpretation | common_practice"
+    "claim_type": "see taxonomy below"
   }
 }
 ```
@@ -25,22 +25,62 @@ actually trains the model's `<think>` block (see README's note on why an
 empty one is dangerous), `reasoning_summary` is the same content kept under
 a name that survives if `think` is ever handled differently later.
 
-`claim_type` is the important one: it's a decision tree, not a vibe.
+`claim_type` is the important one: it's a decision tree, not a vibe. As of
+the 2026-09-06 adversarial-review pass (see git history), the original
+3-value scheme (explicit_standard_concept / interpretation / common_practice)
+was replaced with a richer 7-value taxonomy that forces a real distinction
+between "the standard says X," "the standard's own narrative explains why X"
+(different from the requirement itself), and "I'm inferring why X":
 
-```
-Is this explicitly required/defined by the file's cited source
-(an ISA standard, the FDA PMO, a manufacturer's manual, the actual
-codebase)?
-  YES -> explicit_standard_concept
-  NO, but standard industry implementation practice -> common_practice
-  NO, this is engineering judgment/interpretation -> interpretation
-```
+- `explicit_requirement` - a directly quotable "shall"/"must" requirement.
+- `explicit_standard_concept` - a defined term/structure/hierarchy the
+  source states directly (not necessarily a binding "shall" clause).
+- `mixed_requirement_and_rationale` - a requirement plus the source's *own*
+  stated reasoning for it (e.g. the PMO's "Public Health Reason" narrative
+  sections) - distinct from an entry where the rationale is our inference.
+- `failure_mode_analysis` - reasoning built around enumerating independent
+  ways a system/requirement could fail, and which mechanism catches each.
+- `comparison_inference` - a comparison between two things (e.g. batch vs.
+  continuous-flow) where the framing is our synthesis across sources, not
+  something either source states in those terms.
+- `engineering_rationale` - our own inferred "why," not sourced from the
+  standard's own explanatory text.
+- `derived_from_standard` - a conclusion that follows from a requirement but
+  isn't itself stated.
+- `common_practice` - general industry practice, not tied to a cited source.
 
-The point: prevent the model from learning "this is how ISA-18.2 works" when
-the honest lesson is "this is one reasonable way engineers implement
-ISA-18.2 concepts." `scripts/audit_claims.py` heuristically flags entries
-where the wording and the `claim_type` label disagree - it's not a truth
-oracle, just a tripwire for a human to look again.
+High-confidence bucket (`scripts/audit_claims.py`'s heuristic treats these as
+where absolute/unhedged wording is expected): `explicit_requirement`,
+`explicit_standard_concept`, `mixed_requirement_and_rationale`,
+`failure_mode_analysis`. Everything else is a "softer" claim where hedged
+wording is expected - unhedged wording there is a sign of overclaiming.
+
+The point throughout: prevent the model from learning "this is how ISA-18.2
+works" when the honest lesson is "this is one reasonable way engineers
+implement ISA-18.2 concepts," and prevent conflating "the standard explains
+its own reasoning" with "I inferred this reasoning." `scripts/audit_claims.py`
+heuristically flags entries where the wording and the `claim_type` label
+disagree - it's not a truth oracle, just a tripwire for a human to look
+again.
+
+Before writing any comparison entry: ask whether the memorable one-line
+takeaway actually is the precise distinction, or a simplification that
+happens to sound like it (a batch-vs-continuous entry framed as "human
+checking vs. automatic safety" taught the wrong generalizable lesson even
+though every individual sentence in it was defensible).
+
+Before finalizing any "why" entry: check whether the source's own
+explanatory/narrative text (not just its "shall" requirements) already
+states the rationale - if so, cite that directly (`mixed_requirement_and_rationale`)
+rather than presenting the same explanation as if it were purely inferred
+(`engineering_rationale`).
+
+Before finalizing any "mechanism X protects against Y" entry: explicitly
+enumerate every independent failure mode in play first, rather than
+defaulting to whichever two mechanisms are most salient - a real gap was
+found this way (a holding-tube-sizing entry that covered temperature and
+residence-time protection but omitted flow-rate governance/measurement as
+a third, independent failure mode).
 
 ## Done (merged into data/, audited 2026-09-06)
 
