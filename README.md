@@ -102,6 +102,12 @@ heuristic checker that flags wording/label mismatches.
 - `isa_standards_seed.jsonl` - ISA-88 (physical/procedural model, phase-to-
   control-module relationship) and ISA-18.2 (alarm/alert/prompt/message,
   rationalization, alarms vs. interlocks, suppression, latching).
+- `computerized_systems_seed.jsonl` and `appendix_hvi_part2_seed.jsonl` -
+  FDA PMO Appendix H.VI, computerized/PLC-based public-health controls
+  (dedicated computers, fail-safe behavior, sealed programming/reprogramming,
+  LOSA/HFA/PDD, scan-cycle timing, CIP-mode interlocks).
+- `batch_vs_htst_seed.jsonl` - why batch and continuous-flow HTST
+  pasteurization need structurally different control mechanisms.
 
 Add more `.jsonl` files here as real incidents/fixes accumulate - that's
 more valuable than anything synthetic, and the loader picks up every file
