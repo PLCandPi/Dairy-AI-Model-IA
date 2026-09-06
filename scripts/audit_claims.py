@@ -3,14 +3,18 @@
 data/pending/*.jsonl entries carrying the {metadata: {claim_type}} schema.
 
 This is NOT a truth oracle - it can't check an answer against the actual
-ISA-88/ISA-18.2 standard text (nobody here has that). What it CAN catch:
-wording that reads as an unqualified, absolute standard requirement
-("the standard requires", "always", "never") tagged as merely
-"interpretation" or "common_practice" (probably under-tagged - the claim
-sounds more certain than its label), and the reverse: wording that reads
-as hedged/uncertain ("typically", "commonly", "worth verifying") tagged as
-"explicit_standard_concept" (probably over-tagged - the label claims more
-certainty than the text itself does).
+standard/manual/codebase text on its own (see scripts in this repo's
+history for examples of that verification actually being done by hand).
+What it CAN catch: wording that reads as an unqualified, absolute
+requirement ("the standard requires", "always", "never") tagged as one of
+the softer claim_types (interpretation, comparison_inference,
+engineering_rationale, derived_from_standard, common_practice) - probably
+under-tagged, the claim sounds more certain than its label - and the
+reverse: wording that reads as hedged/uncertain ("typically", "commonly",
+"worth verifying") tagged as one of the high-confidence claim_types
+(explicit_requirement, explicit_standard_concept,
+mixed_requirement_and_rationale, failure_mode_analysis) - probably
+over-tagged, the label claims more certainty than the text itself does.
 
 Flags are prompts for a human to look again, not failures. The point is
 catching entries where the *label* and the *wording* disagree with each
@@ -32,6 +36,19 @@ HEDGE_MARKERS = [
     "commonly called", "design intent", "may ", "can also", "generally",
 ]
 
+# claim_type values where confident/absolute wording is expected, because the
+# claim is grounded in something verified (a quoted requirement, the
+# standard's own stated rationale, or a traced failure-mode analysis) -
+# distinct from the "softer" categories (interpretation, comparison_inference,
+# engineering_rationale, derived_from_standard, common_practice) where
+# unhedged absolute wording is more likely to be overclaiming.
+HIGH_CONFIDENCE_CLAIM_TYPES = {
+    "explicit_requirement",
+    "explicit_standard_concept",
+    "mixed_requirement_and_rationale",
+    "failure_mode_analysis",
+}
+
 
 def load_entries(path):
     with open(path) as f:
@@ -47,11 +64,12 @@ def check_entry(entry):
 
     has_absolute = any(m in text for m in ABSOLUTE_MARKERS)
     has_hedge = any(m in text for m in HEDGE_MARKERS)
+    is_high_confidence = claim_type in HIGH_CONFIDENCE_CLAIM_TYPES
 
-    if claim_type != "explicit_standard_concept" and has_absolute and not has_hedge:
+    if not is_high_confidence and has_absolute and not has_hedge:
         return "under-tagged? reads as an unqualified rule but tagged '%s'" % claim_type
-    if claim_type == "explicit_standard_concept" and has_hedge and not has_absolute:
-        return "over-tagged? reads as hedged/uncertain but tagged 'explicit_standard_concept'"
+    if is_high_confidence and has_hedge and not has_absolute:
+        return "over-tagged? reads as hedged/uncertain but tagged '%s'" % claim_type
     return None
 
 
@@ -87,8 +105,9 @@ def main():
     print("By claim_type:", by_claim_type)
     print(
         "\nReminder: this only checks wording-vs-label consistency, not "
-        "correctness against the actual standard. 'explicit_standard_concept' "
-        "entries are the highest-stakes bucket - review those first."
+        "correctness against the actual standard. High-confidence claim_types "
+        f"({', '.join(sorted(HIGH_CONFIDENCE_CLAIM_TYPES))}) are the "
+        "highest-stakes bucket - review those first."
     )
 
 
