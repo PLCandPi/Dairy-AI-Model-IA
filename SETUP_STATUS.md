@@ -106,10 +106,11 @@ interrupted.
 ## Repo/environment reference
 
 - Repo: `github.com/PLCandPi/Dairy-AI-Model-IA` (public, renamed from
-  `Termux-LLM-Training`). Cloned on the phone at `~/Termux-LLM-Training`,
-  and locally at `/home/alvinad/Termux-LLM-Training` - the local folder
-  names still use the old repo name; only the GitHub repo itself was
-  renamed.
+  `Termux-LLM-Training`). Local folder renamed to match:
+  `/home/alvinad/Dairy-AI-Model-IA`. Phone development is dropped (training
+  now happens on Colab GPU instead - see README's Colab quick start); the
+  phone's clone at `~/Termux-LLM-Training` is untouched and no longer in
+  active use.
 - `train.py`, `setup_termux.sh`, `requirements.txt`, and the seed dataset
   (`data/dairy_domain_seed.jsonl`, `data/heatwatch_codebase_seed.jsonl`) are
   already committed — see `README.md` for the full design rationale (model
