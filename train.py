@@ -74,15 +74,21 @@ def main():
     parser.add_argument("--epochs", type=float, default=3.0)
     args = parser.parse_args()
 
-    print(f"Loading tokenizer/model: {args.model}")
+    use_cuda = torch.cuda.is_available()
+    # fp16 on a training-capable GPU (e.g. Colab's T4); fp32 on CPU-only aarch64
+    # builds (phone), which have no confirmed bf16/fp16 autograd support.
+    dtype = torch.float16 if use_cuda else torch.float32
+
+    print(f"Loading tokenizer/model: {args.model} (device: {'cuda' if use_cuda else 'cpu'})")
     tokenizer = AutoTokenizer.from_pretrained(args.model)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
     model = AutoModelForCausalLM.from_pretrained(
         args.model,
-        torch_dtype=torch.float32,  # fp32: CPU-only aarch64 build, no confirmed bf16/fp16 autograd support
+        torch_dtype=dtype,
         low_cpu_mem_usage=True,
+        device_map="auto" if use_cuda else None,
     )
     model.gradient_checkpointing_enable()
     model.enable_input_require_grads()  # required for grad-checkpointing to work through a frozen base + LoRA
@@ -119,7 +125,7 @@ def main():
         logging_steps=5,
         save_steps=20,
         save_total_limit=3,
-        bf16=False, fp16=False,  # see torch_dtype comment above
+        bf16=False, fp16=use_cuda,  # see dtype comment above
         report_to=[],
     )
 

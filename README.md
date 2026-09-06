@@ -44,6 +44,16 @@ If the process gets killed (phone reboot, Termux backgrounded and killed by
 Android, app force-closed), just run `python train.py` again - it detects
 the last checkpoint and continues from there automatically.
 
+## Quick start (Colab)
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PLCandPi/Termux-LLM-Training/blob/main/colab_train.ipynb)
+
+Same `train.py`, run on a GPU runtime instead of the phone - no Termux/Android
+build issues, and minutes instead of hours. `train.py` auto-detects CUDA and
+switches to fp16; nothing else to configure. Trade-off: your data leaves the
+device and the runtime is ephemeral, so the last notebook cell zips and
+downloads the trained adapter before the session disconnects.
+
 ## Data
 
 `data/*.jsonl`, each line `{"instruction": ..., "input": ..., "output": ...}`:
