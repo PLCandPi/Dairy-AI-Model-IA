@@ -3,6 +3,49 @@
 Tracks what's been researched into training data and what's next. Updated by
 whoever (person or Claude session) runs a research round.
 
+## Training experiment log
+
+**2026-09-06, epoch-count sweep (97 examples, Qwen3-0.6B, LoRA r=16, Colab T4):**
+
+Ran two training rounds to isolate whether "not enough epochs" was the cause
+of a fine-tuned model giving wrong facts and fabricating fake citations
+(e.g. inventing "PMO-1000" and a nonexistent "2018 Food Safety and Hygiene
+Manual" when asked real PMO questions):
+
+1. Default 3 epochs (~36 gradient steps) - baseline run, 5/6 `auto_eval.py`
+   cases flagged, including fabricated citations.
+2. 25 epochs (~325 gradient steps, `save_total_limit` raised to unlimited so
+   every checkpoint - not just the final one - could be evaluated) -
+   `auto_eval.py` run against checkpoints spanning the whole range
+   (checkpoint-60 through checkpoint-260, plus the final adapter). Result:
+   **5-6/6 flagged at every single checkpoint, flat across the entire
+   range** - no improvement from ~4.6 epochs through 25. Training loss
+   dropped steadily the whole time (3.24 -> ~0.14 by epoch 10, clear
+   memorization territory by the end), but that had no correlation with
+   getting the actual held-out facts right.
+
+**Conclusion: epoch count is ruled out as the bottleneck.** If more
+repetition were the fix, the flagged count should have trended down
+somewhere in this range - it didn't, including at the very end where the
+model had clearly moved into heavy memorization of the training text
+itself. The real bottleneck is more fundamental: at 0.6B parameters with a
+LoRA r=16 adapter over ~100 examples, the model isn't reliably encoding
+precise numeric facts/citations no matter how long it trains - it's a
+capacity/architecture limitation, not a training-budget one.
+
+**Not yet tried (queued as the next real experiment):**
+- Same dataset/epochs on `Qwen/Qwen3-1.7B` instead of 0.6B (isolates model
+  capacity as a variable, now that epoch count is ruled out) - Colab's GPU
+  has headroom for this, the earlier "1.7B too tight" conclusion was
+  specifically about phone RAM, not relevant here.
+- Retrieval-augmented approach instead of relying on parametric
+  fine-tuning for exact facts - feed the actual source text (PMO
+  sections, hardware manual excerpts) in as context at inference time,
+  and let fine-tuning's job be reasoning style/domain framing rather than
+  a fact database. Given the flat epoch-sweep result, this is probably the
+  more reliable fix for anything citation-sensitive, independent of
+  whichever base model size gets used.
+
 ## Data schema (as of 2026-09-06)
 
 Every entry in `data/*.jsonl` now carries:
