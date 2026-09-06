@@ -54,11 +54,11 @@ def build_supervised_example(tokenizer, example, max_length):
 
     prompt_ids = tokenizer.apply_chat_template(
         messages, tokenize=True, add_generation_prompt=True,
-    )
+    )["input_ids"]
     full_ids = tokenizer.apply_chat_template(
         messages + [{"role": "assistant", "content": example["output"]}],
         tokenize=True, add_generation_prompt=False,
-    )
+    )["input_ids"]
     full_ids = full_ids[:max_length]
     prompt_len = min(len(prompt_ids), len(full_ids))
 
