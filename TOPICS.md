@@ -162,30 +162,48 @@ relabeled:
 
 ## Drafted, pending review (data/pending/)
 
-- **Computerized/PLC-based public health controls** (FDA PMO Appendix
-  H.VI) - `data/pending/computerized_systems_seed.jsonl`, 8 entries. Covers
-  why computerized systems are treated differently from hard-wired ones
-  (sequential task cycling, easily-changed logic, error-free requirement),
-  dedicated-computer requirement, fail-safe/last-state-switch behavior, ROM
-  program storage, FORCE-ON/FORCE-OFF indicator requirement, the LOSA/HFA/
-  PDD acronyms from the FDD logic diagrams, and sealed hardware-disable
-  switches for reprogrammable peripherals. One entry directly cross-checks
-  PMO criterion 11 (no accessible operator override switches) against
-  HeatWatch's own manual-test override design. All entries directly
-  verified against the primary PMO text (not a secondary source), tagged
-  `explicit_standard_concept` throughout.
+All three files below have been through a full adversarial-review pass
+(source-reverified against the actual PMO/codebase text, not just drafted)
+and use the current 9-value `claim_type` taxonomy. All pass
+`scripts/review_pending.py` and `scripts/audit_claims.py` clean. Need a
+human read before merging into `data/`.
+
+- **Computerized/PLC-based public health controls, part 1** (FDA PMO
+  Appendix H.VI) - `data/pending/computerized_systems_seed.jsonl`, 8
+  entries. Covers why computerized systems are treated differently from
+  hard-wired ones (with the PMO's own exact numbers - 1ms/100ms cycle
+  example, JUMP/BRANCH/GOTO), dedicated-computer requirement (with its
+  actual CIP-cycling exception and per-pasteurizer scope), fail-safe/
+  last-state-switch behavior, the ROM-vs-EPROM/EEPROM/EAPROM terminology
+  ambiguity (flagged, not silently resolved), FORCE-ON/FORCE-OFF indicator
+  requirement, the LOSA/HFA/PDD acronyms (verified verbatim against the
+  logic-diagram legend), and sealed hardware-disable switches for
+  reprogrammable peripherals. One entry cross-checks PMO criterion 11
+  against HeatWatch's actual verified poller.py behavior, explicitly
+  separating "HeatWatch does X today" from "if repositioned as a public-
+  health control, the PMO would require Y."
+- **Computerized/PLC-based public health controls, part 2** -
+  `data/pending/appendix_hvi_part2_seed.jsonl`, 7 entries, deliberately
+  kept generic/non-HeatWatch-specific (see universal-scope memory note).
+  Covers the scan-cycle-timing requirement that enforces the part-1
+  background concern (>=1/sec, no JUMP/GOTO), sealed programming *and*
+  telephone-modem access with the PMO's own cross-system compromise-testing
+  method, the identical 1-second/one-full-cycle diversion limit applied to
+  both chart printing and status printing, event-pen-position/temperature
+  correlation as a general data-logging principle, clean-power-supply
+  requirements (RAM corruption from voltage spikes), and the CIP-mode
+  time-delay and solenoid-relay isolation interlock patterns.
 - **Batch vs. continuous-flow HTST comparison** -
   `data/pending/batch_vs_htst_seed.jsonl`, 5 entries. Covers why continuous
-  flow needs an automatic FDD while batch doesn't (no natural single
-  gating moment vs. product always in motion), what's actually shared
-  between the two (cross-checked indicating/recording thermometers), batch-
-  specific airspace heating and close-coupled valves (both about physical
-  locations the bulk-liquid thermometer can't see), and why HTST needs both
-  tube-geometry sizing *and* a real-time thermal interlock (two different
-  failure modes - not enough time vs. not enough heat).
-
-Both passed `scripts/review_pending.py` and `scripts/audit_claims.py`.
-Need a human read before merging into `data/`.
+  flow needs an automatic FDD while batch doesn't (a discrete release
+  boundary checked once vs. the same decision made continuously on a
+  moving stream - not "human vs. automatic"), what's shared between the
+  two (cross-checked indicating/recording thermometers), batch-specific
+  airspace heating (the PMO's own stated Public Health Reason, not
+  inferred) and close-coupled valves (the actual 0.5C/1F tolerance,
+  inference clearly marked as such), and why HTST needs tube geometry,
+  flow-rate monitoring (LOSA/HFA), *and* a temperature interlock together -
+  three independent failure modes, not two.
 
 ## Needs work (flagged by auto_eval.py or manual review)
 
