@@ -194,10 +194,16 @@ actual flagged answer)_
 
 ## Queued (not yet researched)
 
-- Confirm whether `poller.py`'s "AIME 8U" is actually the PPI AIMS-8U
-  (Modbus/RS-485) found this session, or a different device reached through
-  an HTTP/XML gateway - `AIME_URL = "http://192.168.1.2/index.xml"` doesn't
-  match a Modbus-only device directly.
+- ~~Confirm whether `poller.py`'s "AIME 8U" is the PPI AIMS-8U~~ - confirmed
+  by the user directly: the poller(s) are Modbus-based. No further
+  investigation needed on this specific question.
+- **Generic Modbus protocol fundamentals** (register types - coils, discrete
+  inputs, input registers, holding registers; RTU vs. TCP; function codes;
+  master/slave polling model; addressing conventions) - raised by the user
+  explicitly: dataset should stay universal/transferable, not centered on
+  the AIMS-8U module or HeatWatch specifically (see
+  `feedback_dairy_ai_universal_scope` in cross-session memory). Needs new
+  research (protocol spec, not project-specific).
 - RTD/thermocouple wiring fault modes beyond what's already seeded (open
   circuit vs. short vs. drift signatures on a trend).
 - ISA-88 recipe types (General/Site/Master/Control recipe) - deliberately
