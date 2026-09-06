@@ -13,7 +13,7 @@ import sys
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(REPO_ROOT, "data")
 PENDING_DIR = os.path.join(DATA_DIR, "pending")
-ALLOWED_KEYS = {"instruction", "input", "think", "output"}
+ALLOWED_KEYS = {"instruction", "input", "think", "output", "reasoning_summary", "metadata"}
 DUPLICATE_THRESHOLD = 0.7
 
 
