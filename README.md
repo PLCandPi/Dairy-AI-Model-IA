@@ -61,12 +61,32 @@ file under `data/`, LoRA fine-tunes the base model, and saves the adapter to
 
 ## Data
 
-`data/*.jsonl`, each line `{"instruction": ..., "input": ..., "output": ..., "think": ...}`.
-`think` is optional but strongly recommended: Qwen3's chat template always
-wraps the assistant's reply in a `<think>...</think>` block, empty if
-`think` isn't supplied - training on an empty one teaches the model to
-suppress its own reasoning rather than use it. Populate `think` with the
-real step-by-step reasoning that should lead to `output`.
+`data/*.jsonl`, each line:
+
+```json
+{
+  "instruction": "...", "input": "",
+  "think": "...", "reasoning_summary": "...",
+  "output": "...",
+  "metadata": {
+    "domain": "...", "standard": "...",
+    "category": "...", "difficulty": "...",
+    "claim_type": "explicit_standard_concept | interpretation | common_practice"
+  }
+}
+```
+
+`think` is required in practice, not just optional: Qwen3's chat template
+always wraps the assistant's reply in a `<think>...</think>` block, empty
+if `think` isn't supplied - training on an empty one teaches the model to
+suppress its own reasoning rather than use it. `reasoning_summary` carries
+the same content under a name that isn't tied to chat-template mechanics.
+
+`metadata.claim_type` matters most: it's what stops the model from learning
+"this is how ISA-18.2 works" when the honest lesson is "this is one
+reasonable way engineers implement it." See `TOPICS.md`'s "Data schema"
+section for the exact decision tree, and `scripts/audit_claims.py` for the
+heuristic checker that flags wording/label mismatches.
 
 - `dairy_domain_seed.jsonl` - HTST pasteurization and CIP process knowledge
   (setpoints, cycle stages, common fault modes, sensor behavior).
@@ -97,9 +117,16 @@ entries takes judgment, not just fetching. The realistic split:
 2. **Validate** - `python scripts/review_pending.py` checks structure (valid
    JSON, no missing `think` field, no near-duplicate of something already in
    `data/`). Mechanical only - it doesn't judge correctness.
-3. **Review + merge** - a person reads the batch, then moves it:
+3. **Audit** - `python scripts/audit_claims.py` flags entries whose wording
+   sounds more (or less) certain than their `metadata.claim_type` label
+   claims. Heuristic, not a truth check - it can't verify a claim against
+   the actual standard text, only catch label/wording disagreement. Verify
+   any specific factual claim (device specs, code behavior, regulatory
+   text) against its actual source before trusting it - this project's own
+   audit caught real misattributions exactly this way.
+4. **Review + merge** - a person reads the batch, then moves it:
    `mv data/pending/<file>.jsonl data/<file>.jsonl`.
-4. **Retrain**, then **`python auto_eval.py`** - runs a fixed set of
+5. **Retrain**, then **`python auto_eval.py`** - runs a fixed set of
    held-out questions through the model and checks answers against known
    facts from the source material (not the model grading itself). Flags
    regressions/confabulation into `eval_report.json`; flagged topics go back
